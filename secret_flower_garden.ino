@@ -12,7 +12,8 @@
 // --- Servo Configuration ---
 Servo servoMotor;   // Controls angular sweep for sensor scanning
 
-// Ultrasonic sensors
+// --- Ultrasonic Sensors ---
+// Define two HC-SR04 ultrasonic sensors (trigger, echo)
 UltraSonicDistanceSensor distanceSensor(6, 7);
 UltraSonicDistanceSensor distanceSensor2(5, 4);
 long distance1 = 0;

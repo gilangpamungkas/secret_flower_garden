@@ -119,10 +119,13 @@ void moveServoFullSweep() {
   // Publish to MQTT
   if(client.connected()) client.publish(mqtt_topic.c_str(), RGBpayload, payload_size);
 
-  // Serial output
-  Serial.print("Shortest object: angle="); Serial.print(angleAtMin);
-  Serial.print("°, distance="); Serial.print(minDist);
-  Serial.print(" cm, ColorIndex="); Serial.println(colorIndex);
+// Serial output (for Processing visualization)
+Serial.print(angleAtMin);
+Serial.print(",");
+Serial.print(minDist);
+Serial.print(",");
+Serial.println(colorIndex);
+
 
   // Reset for next period
   shortestDistance1 = 999; shortestDistance2 = 999;

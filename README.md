@@ -41,3 +41,36 @@ This repository builds on the CASA0014 workshop ecosystem, extending its functio
 
 ## 🗂️ Repository Contents
 
+---
+Vespera/
+|-- src/
+|   |-- secret_flower_garden.ino       # Main Arduino sketch
+|   |-- arduino_secrets_template.h     # Safe template for credentials
+|   |-- images/
+|       |-- prototype.jpg              # Project photo
+|       |-- wiring.png                  # Circuit wiring
+|       |-- color_mapping.png           # Color logic diagram
+|       |-- demo.gif                    # Demo animation
+|-- .gitignore
+|-- LICENSE
+|-- README.md
+
+---
+
+## ⚙️ Hardware Setup
+
+| Component | Model | Role |
+|------------|--------|------|
+| Microcontroller | Arduino MKR WiFi 1010 | WiFi + MQTT client |
+| Servo Motor | SG90 | Sweeps dual sensors 0°–180° |
+| Ultrasonic Sensors | HC-SR04 (x2) | Measure distance |
+| LEDs | WS2812 (72 NeoPixels) | Color output |
+| Power | 5V regulated | Supply for all modules |
+
+**Pin configuration** (defined in code):  
+- Servo: D2  
+- Ultrasonic #1: Trig D6 / Echo D7  
+- Ultrasonic #2: Trig D5 / Echo D4  
+
+---
+

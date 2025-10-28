@@ -19,7 +19,7 @@ The luminaire creates a virtual “secret flower garden”, where different zone
 
 Sensor data are transmitted via MQTT to a broker, enabling remote visualization through web interfaces or integration with the original Vespera installation.
 
-[![Demo Video](images/sensor_demo.jpg)](https://www.youtube.com/shorts/9bAf2ExGNtA)
+🚀 See the project come to life! Watch the demo on Youtube here: [![Demo Video](images/sensor_demo.jpg)](https://www.youtube.com/shorts/9bAf2ExGNtA)
 
 
 

@@ -36,32 +36,36 @@ String lightId = "21";
 String mqtt_topic; // The full MQTT topic string for publishing.
 
 struct Color { byte r, g, b; };
-// A pre-defined map of 32 colors, primarily organized by hue.
+// A pre-defined map of 36 colors for 6x6 bins (angle × distance)
 // Used to visually map the combination of object angle and distance.
-Color colorMap[32] = {
-  {255,0,0},{255,64,0},{255,128,0},{255,192,0},
-  {255,255,0},{192,255,0},{128,255,0},{64,255,0},
-  {0,255,0},{0,255,64},{0,255,128},{0,255,192},
-  {0,255,255},{0,192,255},{0,128,255},{0,64,255},
-  {0,0,255},{64,0,255},{128,0,255},{192,0,255},
-  {255,0,255},{255,0,192},{255,0,128},{255,0,64},
-  {128,128,128},{64,64,64},{192,192,192},{255,255,255},
-  {128,0,0},{0,128,0},{0,0,128},{128,128,0}
+Color colorMap[36] = {
+  // Angle Bin 0
+  {255,0,0},{204,0,0},{153,0,0},{102,0,0},{51,0,0},{25,0,0},
+  // Angle Bin 1
+  {255,128,0},{204,102,0},{153,77,0},{102,51,0},{51,25,0},{25,12,0},
+  // Angle Bin 2
+  {0,255,0},{0,204,0},{0,153,0},{0,102,0},{0,51,0},{0,25,0},
+  // Angle Bin 3
+  {0,255,255},{0,204,204},{0,153,153},{0,102,102},{0,51,51},{0,25,25},
+  // Angle Bin 4
+  {0,0,255},{0,0,204},{0,0,153},{0,0,102},{0,0,51},{0,0,25},
+  // Angle Bin 5
+  {255,0,255},{204,0,204},{153,0,153},{102,0,102},{51,0,51},{25,0,25}
 };
 
 // *******************************************************************
 // 3. COLOR MAPPING CONSTANTS (For Logic Clarity)
 // *******************************************************************
-// These constants define the bins used to map the distance and angle to one of the 32 colors.
+// These constants define the bins used to map the distance and angle to one of the 36 colors.
 const int SWEEP_PERIOD_MS = 10000; // The duration of one full detection cycle (10 seconds).
 const int SERVO_STEP_DELAY_MS = 3; // Delay between each servo step to allow sensor readings.
 const int MAX_DISTANCE_INIT_CM = 999; // Initial value for minimum distance tracking.
 
 // Mapping parameters for `colorMap` index calculation:
-const int ANGLE_BIN_SIZE = 30; // Divides the 180-degree sweep into 6 angle bins (180/30 = 6).
-const int DIST_BIN_SIZE = 10;  // Creates distance bins (0-10cm, 10-20cm, etc.).
-const int DIST_BINS_PER_ANGLE = 4; // This is the multiplier from your original code (4).
-const int MAX_COLOR_INDEX = (sizeof(colorMap)/sizeof(Color)) - 1; // Maximum index is 31.
+const int ANGLE_BIN_SIZE = 30;      // Divides the 180-degree sweep into 6 angle bins (180/30 = 6).
+const int DIST_BIN_SIZE = 10;       // Creates distance bins (0-10cm, 10-20cm, etc.).
+const int DIST_BINS_PER_ANGLE = 6;  // Updated to 6 distance bins per angle
+const int MAX_COLOR_INDEX = (sizeof(colorMap)/sizeof(Color)) - 1; // Maximum index is 35.
 
 
 // *******************************************************************
@@ -149,6 +153,10 @@ void initServo() {
 void readSensors() { 
   distance1 = distanceSensor1.measureDistanceCm(); 
   distance2 = distanceSensor2.measureDistanceCm(); 
+
+  // Replace invalid readings (-1) with a high fallback distance
+  if(distance1 < 0) distance1 = 500;  // fallback distance in cm
+  if(distance2 < 0) distance2 = 500;  // fallback distance in cm
 }
 
 // *******************************************************************
@@ -237,10 +245,10 @@ void moveServoFullSweep() {
   // 2. Map distance and angle to a color index (CRITICAL LOGIC)
   // Index = (Angle Bin) * (Distance Bins per Angle) + (Distance Bin)
   // Angle Bin: 0-5 (0-30, 30-60, etc.)
-  // Distance Bin: 0-3 (0-10, 10-20, 20-30, >30)
+  // Distance Bin: 0-5 (0-10, 10-20, ..., 50-60)
   int colorIndex = (angleAtMin / ANGLE_BIN_SIZE) * DIST_BINS_PER_ANGLE + (minDist / DIST_BIN_SIZE); 
   
-  // Clamp the index to the valid range (0-31)
+  // Clamp the index to the valid range (0-35)
   if(colorIndex > MAX_COLOR_INDEX) colorIndex = MAX_COLOR_INDEX; 
 
   // 3. Fill the LEDs with the determined color

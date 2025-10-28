@@ -13,9 +13,16 @@
 
 This project reimagines Vespera as an interactive 360° luminaire, inspired by the flower-shaped Vespera installation in our lab and the immersive experience of virtual museum tours. Using dual ultrasonic sensors, the system detects a visitor’s spatial position and motion, translating these readings into dynamic color gradients across 72 NeoPixels.
 
-The luminaire creates a virtual “secret flower garden”, where different zones correspond to specific flower types: moving through the “rose” area turns the light red, passing through the “tulip” area glows yellow, and each area generates a distinct interplay of color. This mapping allows visitors to explore the installation interactively, with each movement shaping a personalized, immersive visual experience.
+![Vespera](images/vespera.jpeg)
+
+The luminaire creates a virtual “secret flower garden”, where different zones correspond to specific flower types: moving through the “rose” area turns the light red, passing through the “lavender” area glows soft purple, and each area generates a distinct interplay of color. This mapping allows visitors to explore the installation interactively, with each movement shaping a personalized, immersive visual experience.
 
 Sensor data are transmitted via MQTT to a broker, enabling remote visualization through web interfaces or integration with the original Vespera installation.
+
+[![Demo Video](images/sensor_demo.jpg)](https://www.youtube.com/shorts/9bAf2ExGNtA)
+
+
+
 
 ---
 
@@ -29,7 +36,10 @@ This repository builds on the CASA0014 workshop ecosystem, extending its functio
 | **Dual Ultrasonic Scanner (This Project)** | A WiFi-enabled Arduino controller that measures distance from two ultrasonic sensors during a servo sweep, maps readings to colors, and publishes to MQTT topic `student/CASA0014/luminaire/[id]`. |
 | **MQTT Broker** | `mqtt.cetools.org` — central communication hub between controllers, visualisers, and the Vespera installation. |
 | **Web Visualiser** | Browser-based interface that subscribes to the same MQTT topics and mirrors the LED colors in real time. |
-| **Python & Dial Controllers** | Alternative interfaces for publishing color data to the same MQTT topic. |
+
+
+
+
 
 ---
 
@@ -98,8 +108,8 @@ Each color corresponds to a distance–angle bin:
 | Parameter | Range | Bin Size | Notes |
 |------------|--------|-----------|-------|
 | Angle | 0–180° | 30° | 6 bins |
-| Distance | 0–40 cm | 10 cm | 4 bins |
-| Total colors | 6 × 4 = 24 (expanded to 32) | RGB-coded |
+| Distance | 0–60 cm | 10 cm | 6 bins |
+| Total colors | 6 × 6 = 36| RGB-coded |
 
 Example mapping:
 

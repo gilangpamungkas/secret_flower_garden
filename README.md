@@ -1,33 +1,43 @@
-# 🌸 Secret Flower Garden  
-*A Connected Environment Project for CASA0014 – UCL MSc Connected Environments*
+# 🌙 Vespera: Connected Luminaire with Dual Ultrasonic Sensing and MQTT Control
+
+**Author:** Gilang Pamungkas  
+**Course:** CASA0014 – Prototyping the Internet of Things (UCL)  
+**Year:** 2025  
 
 ---
 
-## 🧭 Overview
-**Secret Flower Garden** is an IoT-based interactive luminaire system that visualizes the proximity and direction of nearby objects using servo-mounted ultrasonic sensors and an RGB LED array.  
-The system publishes live color states via **MQTT**, enabling remote visualization and integration with connected environments.
+## ✨ Concept
 
-This repository is structured and documented to serve as a **model of clarity, completeness, and reproducibility**, demonstrating best practices for open-source collaboration and research dissemination.
+**Vespera** — derived from the Latin word for “evening” — represents the *moment when a single point of light emerges in twilight*, symbolizing the passage of time and transition from day to night.  
 
----
-
-## 🧠 Core Concept
-The servo performs a 180° sweep while two ultrasonic sensors capture distance data.  
-Each detection cycle (10 s) identifies the **closest object**, computes its **angle** and **distance bin**, and maps these to one of 32 pre-defined RGB colors.  
-The color is displayed locally via LEDs and simultaneously published to an MQTT broker.
+This project reimagines Vespera as an **interactive luminaire** that detects proximity and motion using **dual ultrasonic sensors** and translates these spatial readings into **color gradients** across 72 NeoPixels. The data are transmitted via **MQTT** to a broker, allowing remote visualization through web interfaces or connection to the original Vespera installation.
 
 ---
 
-## 🧩 System Architecture
+## 🧩 System Overview
 
-| Component | Function |
-|------------|-----------|
-| **Arduino Nano 33 IoT** | Main controller with built-in Wi-Fi module |
-| **HCSR04 Ultrasonic Sensors (x2)** | Measure distances from two directions |
-| **Servo Motor** | Rotates sensor pair for a 180° sweep |
-| **RGB LED Strip (72 LEDs)** | Displays color representing closest object |
-| **MQTT Broker (e.g. mqtt.cetools.org)** | Receives published LED data for remote visualization |
+This repository builds on the CASA0014 workshop ecosystem, extending its functionality with a servo-based scanning mechanism.
+
+| Component | Description |
+|------------|-------------|
+| **Vespera Luminaire (Arduino MKR1010)** | Central light installation receiving RGB color data via MQTT and displaying them on 72 LEDs. |
+| **Dual Ultrasonic Scanner (This Project)** | A WiFi-enabled Arduino controller that measures distance from two ultrasonic sensors during a servo sweep, maps readings to colors, and publishes to MQTT topic `student/CASA0014/luminaire/[id]`. |
+| **MQTT Broker** | `mqtt.cetools.org` — central communication hub between controllers, visualisers, and the Vespera installation. |
+| **Web Visualiser** | Browser-based interface that subscribes to the same MQTT topics and mirrors the LED colors in real time. |
+| **Python & Dial Controllers** | Alternative interfaces for publishing color data to the same MQTT topic. |
 
 ---
 
-## 📁 Repository Structure
+## 🛠️ Features
+
+- **WiFi-enabled MQTT publishing**
+- **Dual ultrasonic ranging (HCSR04)**
+- **Servo-based 180° scanning**
+- **Dynamic color mapping** based on distance and angle
+- **Full payload replication** for compatibility with CASA0014 Vespera
+- **Reproducible, open-source hardware and code**
+
+---
+
+## 🗂️ Repository Contents
+

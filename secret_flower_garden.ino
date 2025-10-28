@@ -97,7 +97,7 @@ const int SERVO_STEP_DELAY_MS = 3; // Delay between each servo step to allow sen
 const int MAX_DISTANCE_INIT_CM = 999; // Initial value for minimum distance tracking.
 
 // Mapping parameters for `colorMap` index calculation:
-const int ANGLE_BIN_SIZE = 30;      // Divides the 180-degree sweep into 6 angle bins (180/30 = 6).
+const int ANGLE_BIN_SIZE = 60;      // Divides the 360-degree sweep into 6 angle bins (360/6 = 60).
 const int DIST_BIN_SIZE = 10;       // Creates distance bins (0-10cm, 10-20cm, etc.).
 const int DIST_BINS_PER_ANGLE = 6;  // Updated to 6 distance bins per angle
 const int MAX_COLOR_INDEX = (sizeof(colorMap)/sizeof(Color)) - 1; // Maximum index is 35.
@@ -232,74 +232,79 @@ void fillAllPixels(Color c){
 // DESCRIPTION: Performs a 10-second continuous servo sweep (0 to 180 and back).
 // During the sweep, it tracks the shortest distance measured and the angle at which it occurred.
 // After the 10s period, it maps this shortest distance/angle to a color and publishes it via MQTT.
+// Updated to handle full 360° coverage with two sensors, 6 angle bins, and improved serial output.
 // PARAMETERS: None
 // RETURNS: None
 // *******************************************************************
 void moveServoFullSweep() {
   static unsigned long periodStart = millis();
-  // Initialize tracking variables to worst-case values at the start of the 10s period.
   static long shortestDistance1 = MAX_DISTANCE_INIT_CM, shortestDistance2 = MAX_DISTANCE_INIT_CM;
   static int shortestAngle1 = 0, shortestAngle2 = 0;
 
-  // Sweep 1: 0 degrees -> 180 degrees
+  // Sweep 0 -> 180
   for(int angle=0; angle<=180; angle++){
     servoMotor.write(angle);
     readSensors();
 
-    // Logic to continuously track the closest object seen by each sensor
     if(distance1 < shortestDistance1){ shortestDistance1 = distance1; shortestAngle1 = angle; }
     if(distance2 < shortestDistance2){ shortestDistance2 = distance2; shortestAngle2 = angle; }
 
-    client.loop(); // Keep MQTT connection alive during the sweep
+    client.loop();
     delay(SERVO_STEP_DELAY_MS);
-
-    if(millis() - periodStart >= SWEEP_PERIOD_MS) break; // Exit if 10s is up
+    if(millis() - periodStart >= SWEEP_PERIOD_MS) break;
   }
 
-  // Sweep 2: 180 degrees -> 0 degrees
+  // Sweep 180 -> 0
   for(int angle=180; angle>=0; angle--){
     servoMotor.write(angle);
     readSensors();
 
-    // Continue tracking the shortest distance
     if(distance1 < shortestDistance1){ shortestDistance1 = distance1; shortestAngle1 = angle; }
     if(distance2 < shortestDistance2){ shortestDistance2 = distance2; shortestAngle2 = angle; }
 
-    client.loop(); // Keep MQTT connection alive
+    client.loop();
     delay(SERVO_STEP_DELAY_MS);
-
-    if(millis() - periodStart >= SWEEP_PERIOD_MS) break; // Exit if 10s is up
+    if(millis() - periodStart >= SWEEP_PERIOD_MS) break;
   }
 
-  // --- Post-Sweep Analysis & Action ---
-  
-  // 1. Determine the overall closest object and its angle
-  long minDist = (shortestDistance1 < shortestDistance2) ? shortestDistance1 : shortestDistance2;
-  int angleAtMin = (shortestDistance1 < shortestDistance2) ? shortestAngle1 : shortestAngle2;
+  // Adjust angles for full 360° coverage
+  int actualAngle1 = shortestAngle1;        // Sensor 1: 0-180
+  int actualAngle2 = shortestAngle2 + 180;  // Sensor 2: 180-360
 
-  // 2. Map distance and angle to a color index (CRITICAL LOGIC)
-  // Index = (Angle Bin) * (Distance Bins per Angle) + (Distance Bin)
-  // Angle Bin: 0-5 (0-30, 30-60, etc.)
-  // Distance Bin: 0-5 (0-10, 10-20, ..., 50-60)
-  int colorIndex = (angleAtMin / ANGLE_BIN_SIZE) * DIST_BINS_PER_ANGLE + (minDist / DIST_BIN_SIZE); 
-  
-  // Clamp the index to the valid range (0-35)
-  if(colorIndex > MAX_COLOR_INDEX) colorIndex = MAX_COLOR_INDEX; 
+  // Determine the overall closest object and its angle
+  long minDist;
+  int angleAtMin;
+  String sensorAtMin;
 
-  // 3. Fill the LEDs with the determined color
+  if(shortestDistance1 < shortestDistance2){
+      minDist = shortestDistance1;
+      angleAtMin = actualAngle1;
+      sensorAtMin = "Sensor1";
+  } else {
+      minDist = shortestDistance2;
+      angleAtMin = actualAngle2;
+      sensorAtMin = "Sensor2";
+  }
+
+  // Map distance and angle to a color index
+  int angleBin = angleAtMin / ANGLE_BIN_SIZE;  // 6 bins over 360°
+  int distanceBin = minDist / DIST_BIN_SIZE;
+
+  int colorIndex = angleBin * DIST_BINS_PER_ANGLE + distanceBin;
+  if(colorIndex > MAX_COLOR_INDEX) colorIndex = MAX_COLOR_INDEX;
+
   fillAllPixels(colorMap[colorIndex]);
 
-  // 4. Publish LED state to MQTT
   if(client.connected()) client.publish(mqtt_topic.c_str(), RGBpayload, PAYLOAD_SIZE);
 
-  // 5. Serial output for debugging and external visualization (e.g., Processing)
+  // Serial output: actual angle, distance, sensor, and color index
   Serial.print(angleAtMin);
   Serial.print(",");
   Serial.print(minDist);
   Serial.print(",");
   Serial.println(colorIndex);
 
-  // 6. Reset for the next 10-second period
+  // Reset tracking for next period
   shortestDistance1 = MAX_DISTANCE_INIT_CM; 
   shortestDistance2 = MAX_DISTANCE_INIT_CM;
   shortestAngle1 = 0; 

@@ -293,5 +293,3 @@ void loop(){
   client.loop(); // Process incoming MQTT messages and keep connection alive
   moveServoFullSweep(); // Execute the main logic cycle
 }
-
-//test secret

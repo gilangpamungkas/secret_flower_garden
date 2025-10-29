@@ -188,7 +188,7 @@ Each RGB triplet represents one light segment corresponding to a flower color zo
 4.	Connect your Arduino and upload secret_flower_garden.ino.
 5.	Open Serial Monitor (9600 baud) to view live data.
  
-🧰 Testing Options
+## 🧰 Testing Options
 🔵 On Real Vespera
 Use the Selector Dial in CASA0014 lab to pick your ID number (1–40).
 Vespera will subscribe to your unique topic.

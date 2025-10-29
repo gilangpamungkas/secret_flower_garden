@@ -209,7 +209,7 @@ You’ll see the color data appear in real time.
 | Web visualiser blank | Wrong topic | Match topic to Arduino `lightId` |
 
  
-🧠 Reproducibility & Open Source Practice
+## 🧠 Reproducibility & Open Source Practice
 
 - All code and hardware configurations are clearly commented and structured for independent replication.  
 - Private credentials are safely excluded via `.gitignore`.  
@@ -217,7 +217,7 @@ You’ll see the color data appear in real time.
 - Compatible with the **CASA0014 ecosystem** for collaborative testing and visualization.  
 
  
-📜 License
+## 📜 License
 This project is released under the MIT License.
  
 ## 📚 References

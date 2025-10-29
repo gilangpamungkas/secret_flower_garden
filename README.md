@@ -1,4 +1,4 @@
-# 🌙 Vespera: 360° Spatial Radar Luminaire with Color Mapping
+# 🌷 Secret Flower Garden: A 360° Spatial Light Experience
 
 
 **Author:** Gilang Pamungkas  
@@ -20,7 +20,7 @@ The luminaire creates a virtual “secret flower garden”, where different zone
 Sensor data are transmitted via MQTT to a broker, enabling remote visualization through web interfaces or integration with the original Vespera installation.
 
 🚀 See the project come to life! Watch the demo on Youtube here: [![Demo Video](images/sensor_demo.jpg)](https://www.youtube.com/shorts/9bAf2ExGNtA)
-
+[![Web Visualization](images/web_visualization.jpg)](https://www.youtube.com/shorts/MIEOaTj03PA)
 
 
 
@@ -36,9 +36,6 @@ This repository builds on the CASA0014 workshop ecosystem, extending its functio
 | **Dual Ultrasonic Scanner (This Project)** | A WiFi-enabled Arduino controller that measures distance from two ultrasonic sensors during a servo sweep, maps readings to colors, and publishes to MQTT topic `student/CASA0014/luminaire/[id]`. |
 | **MQTT Broker** | `mqtt.cetools.org` — central communication hub between controllers, visualisers, and the Vespera installation. |
 | **Web Visualiser** | Browser-based interface that subscribes to the same MQTT topics and mirrors the LED colors in real time. |
-
-
-
 
 
 ---
@@ -63,10 +60,11 @@ Vespera/
 |   |-- secret_flower_garden.ino       # Main Arduino sketch
 |   |-- arduino_secrets_template.h     # Safe template for credentials
 |   |-- images/
-|       |-- prototype.jpg              # Project photo
-|       |-- wiring.png                  # Circuit wiring
-|       |-- color_mapping.png           # Color logic diagram
-|       |-- demo.gif                    # Demo animation
+|       |-- flower_garden_map.png              # color mapping
+|       |-- sensor_demo.jpg                  # thumbnail video demo
+|       |-- vespera.jpeg           # vespera light installation
+|       |-- web_visualization.jpg                   # Animation demo on web
+|       |-- wiring.jpg                    # project wiring
 |-- .gitignore
 |-- LICENSE
 |-- README.md
@@ -88,6 +86,8 @@ Vespera/
 - Ultrasonic #1: Trig D6 / Echo D7  
 - Ultrasonic #2: Trig D5 / Echo D4  
 
+![Project Wiring](images/wiring.jpg)
+
 ---
 
 ## 📡 System Architecture
@@ -97,34 +97,44 @@ Vespera/
 ↳ Vespera Light Installation
 
 The Arduino sweeps the sensors using a servo motor.  
-For every 10-second cycle, it identifies the **shortest detected distance** and **corresponding angle**, converts these into an RGB value via a 32-color lookup table, and publishes that color array (216 bytes) to its MQTT topic.
+For every 10-second cycle, it identifies the **shortest detected distance** and **corresponding angle**, converts these into an RGB value via a 36-color lookup table, and publishes that color array (216 bytes) to its MQTT topic.
 
 ---
 
-## 💡 Color Mapping Logic
+## 🌸 Spatial Color Mapping — *Secret Flower Garden Logic*
 
-Each color corresponds to a distance–angle bin:
+Each flower color corresponds to a **distance–angle bin pair**, derived from **two ultrasonic sensors (0–360° coverage)** and **6×6 mapping bins**.  
+The luminaire uses this system to transform spatial data into a dynamic color composition — a “Secret Flower Garden” of light.
 
 | Parameter | Range | Bin Size | Notes |
 |------------|--------|-----------|-------|
-| Angle | 0–180° | 30° | 6 bins |
-| Distance | 0–60 cm | 10 cm | 6 bins |
-| Total colors | 6 × 6 = 36| RGB-coded |
+| **Angle** | 0–360° | 60° | 6 bins (2 sensors × 180° sweep) |
+| **Distance** | 0–60 cm | 10 cm | 6 bins |
+| **Total Colors** | 6 × 6 = 36 | RGB-coded (each mapped to a flower) |
 
-Example mapping:
+### 🌷 Example Mapping Table
 
-| Distance | Angle | Color |
-|-----------|--------|-------|
-| 0–10 cm | 0–30° | Red |
-| 10–20 cm | 30–60° | Orange |
-| 20–30 cm | 60–90° | Green |
-| 30–40 cm | 90–120° | Cyan |
-| >40 cm | 120–180° | Blue–Violet |
+| Angle Bin (°) | Distance Bin (cm) | Example Flower | Color (RGB) |
+|----------------|-------------------|----------------|--------------|
+| 0–60° | 0–10 | Rose | (255, 0, 0) |
+| 60–120° | 10–20 | Sunflower | (255, 204, 0) |
+| 120–180° | 20–30 | Tulip | (255, 105, 180) |
+| 180–240° | 30–40 | Daffodil | (255, 255, 102) |
+| 240–300° | 40–50 | Orchid | (218, 112, 214) |
+| 300–360° | 50–60 | Lavender | (230, 230, 250) |
 
-Visual logic diagram:  
-![Color Mapping](src/images/color_mapping.png)
+Each bin corresponds to one of the **36 floral tones** defined in the Arduino `colorMap[]`.  
+During a full sweep:
 
+- 🌼 Two ultrasonic sensors capture **distance and angle** data (0–360° field).  
+- 🌿 The nearest detected object determines the **active flower zone color**.  
+- 💡 The selected RGB value is published via **MQTT** to the luminaire.
+
+The following image illustrates the 6×6 color mapping between distance and angle bins, each represented by a specific flower tone.
+
+![Color mapping](images/flower_garden_map.png)
 ---
+
 
 ## 🧠 How It Works (Step-by-Step)
 
@@ -139,19 +149,23 @@ Visual logic diagram:
 
 ## 💬 MQTT Topic and Payload
 
-**Topic format:**
-student/CASA0014/luminaire/[lightId]
+**Topic Format:**  
+`student/CASA0014/luminaire/[lightId]`
 
-**Payload structure:**  
-Binary byte array: `[R1,G1,B1, R2,G2,B2, … R72,G72,B72]`  
+**Payload Structure:**  
+Binary byte array: `[R1,G1,B1, R2,G2,B2, … R72,G72,B72]`
 
-Example colors:
-| Color | RGB Decimal | Hex Bytes |
-|--------|--------------|-----------|
-| Red | 255,0,0 | FF 00 00 |
-| Green | 0,255,0 | 00 FF 00 |
-| Blue | 0,0,255 | 00 00 FF |
-| White | 255,255,255 | FF FF FF |
+Each RGB triplet represents one light segment corresponding to a flower color zone.
+
+### 🌼 Example Flower Colors
+
+| Flower | RGB (Decimal) | Hex Bytes |
+|---------|----------------|-----------|
+| Rose (Red) | 255, 0, 0 | FF 00 00 |
+| Lavender (Purple) | 150, 123, 182 | 96 7B B6 |
+| Sunflower (Yellow) | 255, 223, 0 | FF DF 00 |
+| Hydrangea (Blue) | 96, 150, 255 | 60 96 FF |
+| Jasmine (White) | 255, 255, 255 | FF FF FF |
 
 ---
 
@@ -178,39 +192,40 @@ Example colors:
 🔵 On Real Vespera
 Use the Selector Dial in CASA0014 lab to pick your ID number (1–40).
 Vespera will subscribe to your unique topic.
+
 🌐 On Web Visualiser
 Open the provided web visualiser HTML and set the same topic:
 student/CASA0014/luminaire/[yourId]
 You’ll see the color data appear in real time.
  
-🧩 Troubleshooting
-Symptom	Possible Cause	Fix
-No WiFi connection	Wrong SSID/password	Check arduino_secrets.h
-MQTT not connecting	Broker offline or wrong port	Verify mqtt.cetools.org:1884
-LEDs stay off	Power issue or NeoPixel wiring	Recheck 5 V and data pin
-Servo jitter	Insufficient current	Use external 5 V supply
-Web visualiser blank	Wrong topic	Match topic to Arduino lightId
+## 🧩 Troubleshooting
+
+| Symptom | Possible Cause | Fix |
+|----------|----------------|-----|
+| No WiFi connection | Wrong SSID/password | Check `arduino_secrets.h` |
+| MQTT not connecting | Broker offline or wrong port | Verify `mqtt.cetools.org:1884` |
+| LEDs stay off | Power issue or NeoPixel wiring | Recheck 5 V and data pin |
+| Servo jitter | Insufficient current | Use external 5 V supply |
+| Web visualiser blank | Wrong topic | Match topic to Arduino `lightId` |
+
  
 🧠 Reproducibility & Open Source Practice
-•	All code and hardware configurations are clearly commented and structured for independent replication.
-•	Private credentials are safely excluded via .gitignore.
-•	Project is released under the MIT License for educational and research reuse.
-•	Compatible with CASA0014 ecosystem for collaborative testing and visualization.
+
+- All code and hardware configurations are clearly commented and structured for independent replication.  
+- Private credentials are safely excluded via `.gitignore`.  
+- Project is released under the **MIT License** for educational and research reuse.  
+- Compatible with the **CASA0014 ecosystem** for collaborative testing and visualization.  
+
  
 📜 License
 This project is released under the MIT License.
  
-📚 Citation
-Pamungkas, G. (2025). Vespera: Connected Luminaire with Dual Ultrasonic Sensing and MQTT Control.
-UCL CASA0014 – MSc Connected Environments.
+## 📚 References
+
+1. **Vespera Project Repository (CASA0014, UCL)** – [GitHub link](https://github.com/ucl-casa-ce/casa0014/tree/main/vespera)  
+2. **360° Arduino Radar with 2× HC-SR04 Sensors** – [Hackster.io tutorial](https://www.hackster.io/mircemk/360-arduino-radar-with-2xhc-sr04-sensors-eb0053)  
+3. **Complete Guide for Ultrasonic Sensor HC-SR04** – [Random Nerd Tutorials](https://randomnerdtutorials.com/complete-guide-for-ultrasonic-sensor-hc-sr04/)  
+4. **ESP32 Servo Motor Web Server (Arduino IDE)** – [Random Nerd Tutorials](https://randomnerdtutorials.com/esp32-servo-motor-web-server-arduino-ide/)
+
  
-🙏 Acknowledgements
-•	UCL CASA teaching team for the original Vespera framework
-•	Open-source communities of Arduino, PubSubClient, and WiFiNINA
-•	Classmates and collaborators in CASA0014 workshops
- 
-🖼️ Project Gallery
-Example	Description
-    Fully assembled prototype
-    Component wiring
-    Working demo of color sweep
+

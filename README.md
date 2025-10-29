@@ -55,16 +55,15 @@ This repository builds on the CASA0014 workshop ecosystem, extending its functio
 
 ---
 ```text
-Vespera/
-|-- src/
-|   |-- secret_flower_garden.ino       # Main Arduino sketch
-|   |-- arduino_secrets_template.h     # Safe template for credentials
-|   |-- images/
-|       |-- flower_garden_map.png              # color mapping
-|       |-- sensor_demo.jpg                  # thumbnail video demo
-|       |-- vespera.jpeg           # vespera light installation
-|       |-- web_visualization.jpg                   # Animation demo on web
-|       |-- wiring.jpg                    # project wiring
+secret_flower_garden/
+|-- secret_flower_garden.ino       # Main Arduino sketch
+|-- arduino_secrets_template.h     # Safe template for credentials
+|-- images/
+|    |-- flower_garden_map.png              # color mapping
+|    |-- sensor_demo.jpg                  # thumbnail video demo
+|    |-- vespera.jpeg           # vespera light installation
+|    |-- web_visualization.jpg                   # Animation demo on web
+|    |-- wiring.jpg                    # project wiring
 |-- .gitignore
 |-- LICENSE
 |-- README.md
